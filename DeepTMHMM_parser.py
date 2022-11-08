@@ -11,25 +11,38 @@ parser.add_argument('-simple', help='Make table only from 3line file ')
 parser.add_argument('-topology', help='Make topology reformation'
                                       'in addition it is a path to TMRs.gff3')
 
-
 args = parser.parse_args()
 
 
-def simple_parser(line_data):
+def simple_parser(line_data: list[str]):
+    """
+
+    :param line_data:
+    :return: DataFrame
+
+    Function makes parsing on 3line file
+    """
     table_data = pd.DataFrame()
     splited_list = [line_data[i:i + 3] for i in range(0, len(line_data) + 1, 3)]
     for i in splited_list:  # remove empty lists
         if len(i) == 0:
             splited_list.remove(i)
     for idx, val in enumerate(splited_list):
-        table_data.loc[idx, 'Name'] = val[0].split(' | ')[0].replace('>','')
+        table_data.loc[idx, 'Name'] = val[0].split(' | ')[0].replace('>', '')
         table_data.loc[idx, 'Type'] = val[0].split(' | ')[1]
         table_data.loc[idx, 'AA'] = val[1]
         table_data.loc[idx, 'Topology'] = val[2]
     return table_data
 
 
-def topol_parser(topology_file):
+def topol_parser(topology_file: str):
+    """
+
+    :param topology_file:
+    :return: DataFrame
+
+    Function makes parsing on gff3 file
+    """
 
     plain_list = []
     nested_list = []
@@ -91,12 +104,10 @@ if __name__ == '__main__':
         print(1)
         topology_table = topol_parser(args.topology)
 
-        topology_table.to_csv(rf'{args.output}_tolp.csv')
-
         out_table = out_table.merge(topology_table, how='inner',
                                     right_on='IDs', left_on='Name')
 
-        out_table = out_table.iloc[:, [0, 1, 2, 5]]
+        out_table = out_table.iloc[:, [0, 1, 2, 5]]  # remove duplicated columns
 
         if args.delimiter == 1:
 
